@@ -1,0 +1,221 @@
+---
+title: "Field plots to point data"
+author: "Anna Talucci"
+date: "6/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Pakcages
+```{r}
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(sp) # spatial data
+library(rgdal) # geospatial data
+library(raster) # deals with rasters
+library(ggplot2)
+library(rgeos) # GIS Geometry
+library(foreign) # deals with dbf files
+library(latticeExtra)
+library(sf)
+```
+
+# Functions
+function to remove rowswith NA in Lat/long  column
+```{r}
+completeFun <- function(data, desiredCols) {
+  completeVec <- complete.cases(data[, desiredCols])
+  return(data[completeVec, ])
+}
+```
+
+
+# Field Data Org
+
+```{r}
+site_info = read.csv("../data/field/site_info_2018-2019.csv")
+```
+
+
+```{r}
+head(site_info)
+```
+
+# Subset field data by transect
+
+## Create a unique ID for each point
+```{r}
+site_info2 = site_info %>% mutate(ID =  paste(site, burn_year, transect, plot, sep = '_')) %>%  
+  dplyr::select(ID, longitude:elevation, region:plot, slope:aspect)
+
+site_info2
+```
+
+
+Select by burn year
+
+```{r}
+site_info2 %>% filter(burn_year >= 2001) 
+```
+
+Burn years include 2001, 2002, 2003, 2010, 2015
+
+## Create separte dataframe for each fire year
+
+```{r}
+burn2001 = site_info2 %>% filter(burn_year == 2001) 
+burn2001
+```
+
+```{r}
+burn2002 = site_info2 %>% filter(burn_year == 2002) 
+burn2002 = completeFun(burn2002, c("longitude", "latitude"))
+burn2002
+```
+
+```{r}
+burn2003 = site_info2 %>% filter(burn_year == 2003) 
+burn2003
+```
+
+```{r}
+burn2010 = site_info2 %>% filter(burn_year == 2010) 
+burn2010
+```
+
+
+```{r}
+burn2015 = site_info2 %>% filter(burn_year == 2015) 
+burn2015 = completeFun(burn2015, c("longitude", "latitude"))
+burn2015
+```
+# Spatial data
+
+## Projections
+
+WGS 84 need for gee
+```{r}
+wgs_proj =  "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs "
+
+```
+
+Equal Area projection for russia need for buffering hotspot data
+https://gis.stackexchange.com/questions/264093/projection-for-russia-map
+
++proj=aea +lat_1=50 +lat_2=70 +lat_0=56 +lon_0=100 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs 
++proj=aea +lat_1=50 +lat_2=70 +lat_0=56 +lon_0=100 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0 
+
+```{r}
+ee_russia = "+proj=aea +lat_1=50 +lat_2=70 +lat_0=56 +lon_0=100 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0 "
+```
+
+# Data frame to  points (spatial dataframe)
+
+## Burn2001
+
+Define coordinates and generate spatial point data frame with attributes
+
+```{r}
+coords_burn2001 = cbind(burn2001$longitude, burn2001$latitude)
+burn2001_pt <- SpatialPointsDataFrame(coords_burn2001, proj4string = CRS(wgs_proj), data = burn2001)
+```
+
+Transform from sp to sf
+
+```{r}
+burn2001_pt_sf = st_as_sf(burn2001_pt)
+```
+
+Write to shapefile
+
+```{r eval=FALSE, include=FALSE}
+st_write(burn2001_pt_sf, "../outputs/point_data/burn2001_wgs84.shp", driver="ESRI Shapefile") 
+```
+
+## Burn2002
+
+Define coordinates and generate spatial point data frame with attributes
+
+```{r}
+coords_burn2002 = cbind(burn2002$longitude, burn2002$latitude)
+burn2002_pt <- SpatialPointsDataFrame(coords_burn2002, proj4string = CRS(wgs_proj), data = burn2002)
+```
+
+Transform from sp to sf
+
+```{r}
+burn2002_pt_sf = st_as_sf(burn2002_pt)
+```
+
+Write to shapefile
+
+```{r eval=FALSE, include=FALSE}
+st_write(burn2002_pt_sf, "../outputs/point_data/burn2002_wgs84.shp", driver="ESRI Shapefile") 
+```
+
+## Burn2003
+
+Define coordinates and generate spatial point data frame with attributes
+
+```{r}
+coords_burn2003 = cbind(burn2003$longitude, burn2003$latitude)
+burn2003_pt <- SpatialPointsDataFrame(coords_burn2003, proj4string = CRS(wgs_proj), data = burn2003)
+```
+
+Transform from sp to sf
+
+```{r}
+burn2003_pt_sf = st_as_sf(burn2003_pt)
+```
+
+Write to shapefile
+
+```{r eval=FALSE, include=FALSE}
+st_write(burn2003_pt_sf, "../outputs/point_data/burn2003_wgs84.shp", driver="ESRI Shapefile") 
+```
+
+## Burn2010
+
+Define coordinates and generate spatial point data frame with attributes
+
+```{r}
+coords_burn2010 = cbind(burn2010$longitude, burn2010$latitude)
+burn2010_pt <- SpatialPointsDataFrame(coords_burn2010, proj4string = CRS(wgs_proj), data = burn2010)
+```
+
+Transform from sp to sf
+
+```{r}
+burn2010_pt_sf = st_as_sf(burn2010_pt)
+```
+
+Write to shapefile
+
+```{r eval=FALSE, include=FALSE}
+st_write(burn2010_pt_sf, "../outputs/point_data/burn2010_wgs84.shp", driver="ESRI Shapefile") 
+```
+
+## Burn2015
+
+Define coordinates and generate spatial point data frame with attributes
+
+```{r}
+coords_burn2015 = cbind(burn2015$longitude, burn2015$latitude)
+burn2015_pt <- SpatialPointsDataFrame(coords_burn2015, proj4string = CRS(wgs_proj), data = burn2015)
+```
+
+Transform from sp to sf
+
+```{r}
+burn2015_pt_sf = st_as_sf(burn2015_pt)
+```
+
+Write to shapefile
+
+```{r eval=FALSE, include=FALSE}
+st_write(burn2015_pt_sf, "../outputs/point_data/burn2015_wgs84.shp", driver="ESRI Shapefile") 
+```
