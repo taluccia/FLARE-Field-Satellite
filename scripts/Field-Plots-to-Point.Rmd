@@ -8,6 +8,9 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Overview
+
+Create spatial points data  fram  for plots that burned from 2001 to present. Point data will be used  to extract  dnbr and RdNBR values from satellite imagery of of burn severity  calculations.
 
 # Pakcages
 ```{r}
@@ -57,6 +60,10 @@ site_info2
 
 
 Select by burn year
+```{r}
+unique(site_info2$burn_year)
+```
+
 
 ```{r}
 site_info2 %>% filter(burn_year >= 2001) 
@@ -124,16 +131,47 @@ coords_burn2001 = cbind(burn2001$longitude, burn2001$latitude)
 burn2001_pt <- SpatialPointsDataFrame(coords_burn2001, proj4string = CRS(wgs_proj), data = burn2001)
 ```
 
+Transform to Equal area projection for buffer
+```{r}
+burn2001_pt_ee <- spTransform(burn2001_pt, CRS(ee_russia))
+```
+
+```{r}
+burn2001_pt_ee
+```
+
+Generate a spatial buffer
+```{r}
+burn2001_pt_ee_30m = gBuffer(burn2001_pt_ee, width = 30, capStyle="SQUARE", joinStyle="ROUND")
+```
+
+Spatial transform Buffer back to WGS
+
+```{r}
+burn2001_buff_30m <- spTransform(burn2001_pt_ee_30m, CRS(wgs_proj))
+```
+
 Transform from sp to sf
 
 ```{r}
 burn2001_pt_sf = st_as_sf(burn2001_pt)
+burn2001_buff_30m_sf = st_as_sf(burn2001_buff_30m)
 ```
+
+```{r}
+burn2001_pt_sf
+burn2001_buff_30m_sf
+```
+
 
 Write to shapefile
 
 ```{r eval=FALSE, include=FALSE}
 st_write(burn2001_pt_sf, "../outputs/point_data/burn2001_wgs84.shp", driver="ESRI Shapefile") 
+```
+
+```{r eval=FALSE, include=FALSE}
+st_write(burn2001_buff_30m_sf, "../outputs/point_data/burn2001_wgs84_30m.shp", driver="ESRI Shapefile") 
 ```
 
 ## Burn2002
