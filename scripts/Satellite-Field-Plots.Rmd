@@ -1,0 +1,355 @@
+---
+title: "Satellite-Field-Plots"
+author: "Anna Talucci"
+date: "6/6/2020"
+output: html_document
+---
+
+# Overview
+
+Organize satellite data and plot
+
+
+# Pakcages
+```{r}
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+```
+
+# Functions
+
+```{r}
+numextract <- function(string){ 
+  str_extract(string, "\\-*\\d+\\.*\\d*")
+} 
+
+
+```
+
+# Data Organization
+
+## For 2001
+```{r}
+res2001_30m = read.csv("../data/satellite/2020-06-05_burn2001_fieldplots.csv")
+res2001_45m = read.csv("../data/satellite/2020-06-05_burn2001_buff_45m.csv")
+res2001_60m = read.csv("../data/satellite/2020-06-05_burn2001_buff_60m.csv")
+res2001_90m = read.csv("../data/satellite/2020-06-05_burn2001_buff_90m.csv")
+```
+
+
+```{r}
+head(res2001_30m)
+head(res2001_45m)
+head(res2001_60m)
+head(res2001_90m)
+```
+
+## Add column for resolution
+
+```{r}
+res2001_30m = res2001_30m %>% mutate(resolution_m = 30)
+res2001_45m = res2001_45m %>% mutate(resolution_m = 45)
+res2001_60m = res2001_60m %>% mutate(resolution_m = 60)
+res2001_90m = res2001_90m %>% mutate(resolution_m = 90)
+```
+
+
+```{r}
+head(res2001_30m)
+head(res2001_45m)
+head(res2001_60m)
+head(res2001_90m)
+```
+
+## Combine dataframes
+
+```{r}
+combo2001_1 = rbind(res2001_30m, res2001_45m)
+combo2001_2 = rbind(res2001_60m, res2001_90m)
+combo2001_3 = rbind(combo2001_1, combo2001_2)
+```
+
+### Select  columns
+```{r}
+burn2001 =  combo2001_3  %>% dplyr::select(ID:burn_year,  elevation:plot, region:up_flood, dnbr, rdnbr, resolution_m)
+burn2001
+```
+#### Save
+```{r eval=FALSE, include=FALSE}
+write.csv(burn2001, "../outputs/burn_severity_2001.csv", row.names = FALSE)
+```
+
+### Plot CN 1
+```{r}
+burn2001_CN1 = burn2001 %>% mutate(plot_dis = as.numeric(numextract(plot))) %>%  mutate(resolution_m = as.factor(resolution_m)) %>%  filter(site=='CN') %>% group_by(transect) %>% filter(transect == 1)
+burn2001_CN1
+```
+```{r}
+str(burn2001_CN1)
+```
+
+```{r}
+graph_CN1 = ggplot(data = burn2001_CN1, aes(x=plot_dis, y=dnbr)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~resolution_m) +
+  theme_bw() +
+  labs(subtitle = "CN transect 1") 
+
+graph_CN1
+```
+
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2020-06-06_CN1_dnbr.jpeg", plot = graph_CN1, width = 6, height = 3, units = c("in"), dpi=600 )
+```
+
+```{r}
+graph2_CN1 = ggplot(data = burn2001_CN1, aes(x=dnbr, y=rdnbr)) +
+  geom_point() +
+  facet_wrap(~resolution_m) +
+  theme_bw() +
+  labs(title = "CN transect 1", subtitle = "dNBR v. RdNBR") 
+
+graph2_CN1
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2020-06-06_CN1_dnbr_rdnbr.jpeg", plot = graph2_CN1, width = 6, height = 3, units = c("in"), dpi=600 )
+```
+
+### Plot CN 2
+```{r}
+burn2001_CN2 = burn2001 %>% mutate(plot_dis = as.numeric(numextract(plot))) %>%mutate(resolution_m = as.factor(resolution_m)) %>%  filter(site=='CN') %>% group_by(transect) %>% filter(transect == 2)
+burn2001_CN2
+```
+
+```{r}
+graph_CN2 = ggplot(data = burn2001_CN2, aes(x=plot_dis, y=dnbr)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~resolution_m) +
+  theme_bw() +
+  labs(subtitle = "CN transect 2")
+
+graph_CN2
+```
+
+```{r eval=FALSE, include=FALSE}
+ggsave("../figures/2020-06-06_CN2_dnbr.jpeg", plot = graph_CN2, width = 6, height = 3, units = c("in"), dpi=600 )
+```
+
+
+## For 2002
+
+```{r}
+res2002_30m = read.csv("../data/satellite/2020-06-05_burn2002_fieldplots.csv")
+res2002_45m = read.csv("../data/satellite/2020-06-05_burn2002_buff_45m.csv")
+res2002_60m = read.csv("../data/satellite/2020-06-05_burn2002_buff_60m.csv")
+res2002_90m = read.csv("../data/satellite/2020-06-05_burn2002_buff_90m.csv")
+```
+
+
+```{r}
+head(res2002_30m)
+head(res2002_45m)
+head(res2002_60m)
+head(res2002_90m)
+```
+
+## Add column for resolution
+
+```{r}
+res2002_30m = res2002_30m %>% mutate(resolution_m = 30)
+res2002_45m = res2002_45m %>% mutate(resolution_m = 45)
+res2002_60m = res2002_60m %>% mutate(resolution_m = 60)
+res2002_90m = res2002_90m %>% mutate(resolution_m = 90)
+```
+
+
+```{r}
+head(res2002_30m)
+head(res2002_45m)
+head(res2002_60m)
+head(res2002_90m)
+```
+
+## Combine dataframes
+
+```{r}
+combo2002_1 = rbind(res2002_30m, res2002_45m)
+combo2002_2 = rbind(res2002_60m, res2002_90m)
+combo2002_3 = rbind(combo2002_1, combo2002_2)
+```
+
+```{r}
+combo2002_3
+```
+
+### Select  columns
+```{r}
+burn2002 = combo2002_3  %>% dplyr::select(ID, burn_year, latitude:plot, region:up_flood, dnbr, rdnbr, resolution_m)
+burn2002
+```
+#### Save
+```{r eval=FALSE, include=FALSE}
+write.csv(burn2002, "../outputs/burn_severity_2002.csv", row.names = FALSE)
+```
+
+## For 2003
+```{r}
+res2003_30m = read.csv("../data/satellite/2020-06-05_burn2003_fieldplots.csv")
+res2003_45m = read.csv("../data/satellite/2020-06-05_burn2003_buff_45m.csv")
+res2003_60m = read.csv("../data/satellite/2020-06-05_burn2003_buff_60m.csv")
+res2003_90m = read.csv("../data/satellite/2020-06-05_burn2003_buff_90m.csv")
+```
+
+
+```{r}
+head(res2003_30m)
+head(res2003_45m)
+head(res2003_60m)
+head(res2003_90m)
+```
+
+## Add column for resolution
+
+```{r}
+res2003_30m = res2003_30m %>% mutate(resolution_m = 30)
+res2003_45m = res2003_45m %>% mutate(resolution_m = 45)
+res2003_60m = res2003_60m %>% mutate(resolution_m = 60)
+res2003_90m = res2003_90m %>% mutate(resolution_m = 90)
+```
+
+
+```{r}
+head(res2003_30m)
+head(res2003_45m)
+head(res2003_60m)
+head(res2003_90m)
+```
+
+## Combine dataframes
+
+```{r}
+combo2003_1 = rbind(res2003_30m, res2003_45m)
+combo2003_2 = rbind(res2003_60m, res2003_90m)
+combo2003_3 = rbind(combo2003_1, combo2003_2)
+```
+
+### Select  columns
+```{r}
+burn2003 =  combo2003_3  %>% dplyr::select(ID, burn_year, latitude:plot, region:transect, dnbr, rdnbr, resolution_m)
+burn2003
+```
+#### Save
+```{r eval=FALSE, include=FALSE}
+write.csv(burn2003, "../outputs/burn_severity_2003.csv", row.names = FALSE)
+```
+
+## For 2010
+```{r}
+res2010_30m = read.csv("../data/satellite/2020-06-05_burn2010_fieldplots.csv")
+res2010_45m = read.csv("../data/satellite/2020-06-05_burn2010_buff_45m.csv")
+res2010_60m = read.csv("../data/satellite/2020-06-05_burn2010_buff_60m.csv")
+res2010_90m = read.csv("../data/satellite/2020-06-05_burn2010_buff_90m.csv")
+```
+
+
+```{r}
+head(res2010_30m)
+head(res2010_45m)
+head(res2010_60m)
+head(res2010_90m)
+```
+
+## Add column for resolution
+
+```{r}
+res2010_30m = res2010_30m %>% mutate(resolution_m = 30)
+res2010_45m = res2010_45m %>% mutate(resolution_m = 45)
+res2010_60m = res2010_60m %>% mutate(resolution_m = 60)
+res2010_90m = res2010_90m %>% mutate(resolution_m = 90)
+```
+
+
+```{r}
+head(res2010_30m)
+head(res2010_45m)
+head(res2010_60m)
+head(res2010_90m)
+```
+
+## Combine dataframes
+
+```{r}
+combo2010_1 = rbind(res2010_30m, res2010_45m)
+combo2010_2 = rbind(res2010_60m, res2010_90m)
+combo2010_3 = rbind(combo2010_1, combo2010_2)
+```
+
+### Select  columns
+```{r}
+burn2010 =  combo2010_3  %>% dplyr::select(ID:burn_year,  elevation:plot, region:up_flood, dnbr, rdnbr, resolution_m)
+burn2010
+```
+#### Save
+```{r eval=FALSE, include=FALSE}
+write.csv(burn2010, "../outputs/burn_severity_2010.csv", row.names = FALSE)
+```
+
+## For 2015
+```{r}
+res2015_30m = read.csv("../data/satellite/2020-06-05_burn2015_fieldplots.csv")
+res2015_45m = read.csv("../data/satellite/2020-06-05_burn2015_buff_45m.csv")
+res2015_60m = read.csv("../data/satellite/2020-06-05_burn2015_buff_60m.csv")
+res2015_90m = read.csv("../data/satellite/2020-06-05_burn2015_buff_90m.csv")
+```
+
+
+```{r}
+head(res2015_30m)
+head(res2015_45m)
+head(res2015_60m)
+head(res2015_90m)
+```
+
+## Add column for resolution
+
+```{r}
+res2015_30m = res2015_30m %>% mutate(resolution_m = 30)
+res2015_45m = res2015_45m %>% mutate(resolution_m = 45)
+res2015_60m = res2015_60m %>% mutate(resolution_m = 60)
+res2015_90m = res2015_90m %>% mutate(resolution_m = 90)
+```
+
+
+```{r}
+head(res2015_30m)
+head(res2015_45m)
+head(res2015_60m)
+head(res2015_90m)
+```
+
+## Combine dataframes
+
+```{r}
+combo2015_1 = rbind(res2015_30m, res2015_45m)
+combo2015_2 = rbind(res2015_60m, res2015_90m)
+combo2015_3 = rbind(combo2015_1, combo2015_2)
+```
+
+### Select  columns
+```{r}
+burn2015 =  combo2015_3  %>% dplyr::select(ID:burn_year,  elevation:plot, region:up_flood, dnbr, rdnbr, resolution_m)
+burn2015
+```
+
+#### Save
+```{r eval=FALSE, include=FALSE}
+write.csv(burn2015, "../outputs/burn_severity_2015.csv", row.names = FALSE)
+```
+
